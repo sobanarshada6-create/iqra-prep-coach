@@ -15,7 +15,7 @@ type Phase = "setup" | "loading" | "active" | "submitted" | "result";
 export default function TestMode({ profile, onNavigate }: Props) {
   const [phase, setPhase] = useState<Phase>("setup");
   const [selectedSubject, setSelectedSubject] = useState(SUBJECTS[0].id);
-  const [questionCount, setQuestionCount] = useState(20);
+  const [questionCount, setQuestionCount] = useState(10);
   const [mcqs, setMcqs] = useState<MCQ[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -182,7 +182,7 @@ export default function TestMode({ profile, onNavigate }: Props) {
             <label style={{ color: "var(--muted)", fontSize: "0.8rem", fontWeight: 600, display: "block", marginBottom: "8px" }}>
               QUESTIONS: {questionCount} &nbsp;|&nbsp; TIME: ~{Math.round(questionCount * 1.5)} min
             </label>
-            <input type="range" min={10} max={50} step={5} value={questionCount} onChange={(e) => setQuestionCount(Number(e.target.value))}
+            <input type="range" min={5} max={20} step={5} value={questionCount} onChange={(e) => setQuestionCount(Number(e.target.value))}
               style={{ width: "100%", accentColor: subject.color }} />
           </div>
           <button onClick={startTest}

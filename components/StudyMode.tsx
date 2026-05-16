@@ -19,7 +19,7 @@ export default function StudyMode({ profile, onNavigate }: Props) {
   const [error, setError] = useState("");
   const [bookmarks, setBookmarks] = useState<string[]>(Storage.getBookmarks());
   const [weakMarked, setWeakMarked] = useState<string[]>([]);
-  const [count, setCount] = useState(20);
+  const [count, setCount] = useState(10);
   const [sessionStarted, setSessionStarted] = useState(false);
 
   const subject = SUBJECTS.find((s) => s.id === selectedSubject)!;

@@ -4,7 +4,7 @@ import { SUBJECTS } from "@/lib/subjects";
 
 export async function POST(req: NextRequest) {
   try {
-    const { subject_id, count = 20, difficulty_mix, served_topics = [], day_number = 1 } = await req.json();
+    const { subject_id, count = 10, difficulty_mix, served_topics = [], day_number = 1 } = await req.json();
 
     const subject = SUBJECTS.find((s) => s.id === subject_id);
     if (!subject) return NextResponse.json({ error: "Subject not found" }, { status: 400 });
@@ -15,44 +15,38 @@ export async function POST(req: NextRequest) {
       : "";
     const difficultyNote = difficulty_mix || "40% easy, 40% medium, 20% hard";
 
-    const prompt = `You are an expert exam paper setter for FGEI BPS-15 Assistant competitive exam in Pakistan.
+    const prompt = `You are an expert exam paper setter for FGEI BPS-15 competitive exam in Pakistan.
 
 Generate exactly ${count} multiple-choice questions for subject: ${subject.name}
-Topics to cover: ${topicsStr}
-Difficulty mix: ${difficultyNote}
+Topics: ${topicsStr}
+Difficulty: ${difficultyNote}
 Day ${day_number} of 15-day prep plan.${avoidStr}
 
 Rules:
 - Each question must have exactly 4 options labeled A, B, C, D
 - One correct answer only
-- Questions must be factually accurate about Pakistan
-- For Current Affairs: focus on last 6 months Pakistan & world events
+- Questions must be factually accurate
+- For Current Affairs: focus on recent Pakistan and world events
 - For Math/IQ: include actual numbers and calculations
-- Explanations must be 2-3 lines, educational
+- Keep explanations short (1-2 sentences)
 
-IMPORTANT: Return ONLY a raw JSON array. No markdown fences, no explanation text. Start directly with [
-[
-  {
-    "id": "mcq_1",
-    "subject_id": "${subject_id}",
-    "subject_name": "${subject.name}",
-    "question": "Question text?",
-    "options": {"A": "Option A", "B": "Option B", "C": "Option C", "D": "Option D"},
-    "correct_answer": "A",
-    "explanation": "Explanation here.",
-    "difficulty": "easy",
-    "topic": "${subject.topics[0]}"
-  }
-]`;
+Return ONLY a valid JSON array with no extra text, no markdown, no code fences. The response must start with [ and end with ].
+
+Each object must follow this exact structure:
+{"id":"mcq_1","subject_id":"${subject_id}","subject_name":"${subject.name}","question":"...","options":{"A":"...","B":"...","C":"...","D":"..."},"correct_answer":"A","explanation":"...","difficulty":"easy","topic":"..."}
+
+Generate all ${count} questions now:`;
 
     const rawText = await aiChat(
       [{ role: "user", content: prompt }],
       undefined,
-      4000
+      6000
     );
 
     // Extract JSON array from response
-    const jsonMatch = rawText.match(/\[[\s\S]*\]/);
+    // Clean the response - remove markdown fences if AI added them
+    const cleaned = rawText.replace(/```json/gi, "").replace(/```/g, "").trim();
+    const jsonMatch = cleaned.match(/\[[\s\S]*\]/);
     if (!jsonMatch) {
       return NextResponse.json(
         { error: "AI did not return valid JSON. Try again.", raw: rawText.slice(0, 300) },
