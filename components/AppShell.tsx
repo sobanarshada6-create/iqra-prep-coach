@@ -16,14 +16,21 @@ import ChatAssistant from "./ChatAssistant";
 export default function AppShell() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [view, setView] = useState<AppView>("home");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const saved = Storage.getUserProfile();
     setProfile(saved);
     Storage.updateStreak();
     setMounted(true);
+    
+    // Mobile detection
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   const handleOnboardingComplete = (p: UserProfile) => {
@@ -61,33 +68,52 @@ export default function AppShell() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: "var(--background)" }}>
+    <div className="flex h-screen overflow-hidden relative" style={{ background: "var(--background)" }}>
+      {/* Mobile Overlay */}
+      {isMobile && sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 backdrop-blur-sm transition-opacity"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+      
       {/* Sidebar */}
       <Sidebar
         profile={profile}
         currentView={view}
         onNavigate={setView}
         isOpen={sidebarOpen}
+        isMobile={isMobile}
         onToggle={() => setSidebarOpen(!sidebarOpen)}
       />
 
       {/* Main Content */}
       <div
-        className="flex flex-col flex-1 overflow-hidden transition-all duration-300"
-        style={{ marginLeft: sidebarOpen ? "280px" : "0" }}
+        className="flex flex-col flex-1 overflow-hidden transition-all duration-500 ease-out"
+        style={{ 
+          marginLeft: sidebarOpen && !isMobile ? "280px" : "0",
+        }}
       >
         {/* Top Bar */}
         <div
-          className="flex items-center justify-between px-6 py-3 flex-shrink-0"
-          style={{ background: "var(--card)", borderBottom: "1px solid var(--card-border)", height: "56px" }}
+          className="flex items-center justify-between px-4 md:px-6 py-3 flex-shrink-0 backdrop-blur-md"
+          style={{ 
+            background: "rgba(22, 22, 26, 0.85)", 
+            borderBottom: "1px solid rgba(108, 99, 255, 0.2)", 
+            height: "60px",
+          }}
         >
           <div className="flex items-center gap-3">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 rounded-lg transition-colors"
-              style={{ background: "var(--card-border)", color: "var(--foreground)" }}
+              className="p-2.5 rounded-xl transition-all duration-300 hover:scale-105"
+              style={{ 
+                background: "linear-gradient(135deg, rgba(108,99,255,0.2), rgba(0,212,170,0.1))", 
+                color: "var(--foreground)",
+                border: "1px solid rgba(108,99,255,0.3)"
+              }}
             >
-              ☰
+              {sidebarOpen ? "✕" : "☰"}
             </button>
             <span style={{ color: "var(--muted)", fontSize: "0.85rem" }}>
               Day {profile.current_day} of 15

@@ -8,6 +8,7 @@ interface Props {
   currentView: AppView;
   onNavigate: (v: AppView) => void;
   isOpen: boolean;
+  isMobile?: boolean;
   onToggle: () => void;
 }
 
@@ -20,55 +21,76 @@ const NAV_ITEMS: Array<{ view: AppView; label: string; icon: string }> = [
   { view: "dashboard",  label: "My Dashboard",   icon: "📊" },
 ];
 
-export default function Sidebar({ profile, currentView, onNavigate, isOpen }: Props) {
+export default function Sidebar({ profile, currentView, onNavigate, isOpen, isMobile, onToggle }: Props) {
   const today = FIFTEEN_DAY_PLAN[profile.current_day - 1];
   const progress = ((profile.current_day - 1) / 15) * 100;
 
-  if (!isOpen) return null;
-
   return (
     <div
-      className="fixed left-0 top-0 h-full flex flex-col z-40"
+      className="fixed left-0 top-0 h-full flex flex-col z-50 transition-transform duration-500 ease-out"
       style={{
         width: "280px",
-        background: "var(--card)",
-        borderRight: "1px solid var(--card-border)",
+        background: "linear-gradient(180deg, rgba(22,22,26,0.98) 0%, rgba(16,16,20,0.99) 100%)",
+        borderRight: "1px solid rgba(108, 99, 255, 0.25)",
+        transform: isOpen ? "translateX(0)" : "translateX(-100%)",
+        boxShadow: isOpen ? "4px 0 30px rgba(0,0,0,0.5), 0 0 60px rgba(108,99,255,0.1)" : "none",
       }}
     >
       {/* Logo */}
-      <div className="p-5 border-b" style={{ borderColor: "var(--card-border)" }}>
-        <div className="flex items-center gap-3">
-          <div
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: "12px",
-              background: "linear-gradient(135deg, var(--primary), var(--green))",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "1.3rem",
-              flexShrink: 0,
-            }}
-          >
-            🎓
+      <div className="p-5 border-b" style={{ borderColor: "rgba(108, 99, 255, 0.2)" }}>
+        <div className="flex items-center gap-3 justify-between">
+          <div className="flex items-center gap-3">
+            <div
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: "14px",
+                background: "linear-gradient(135deg, var(--primary) 0%, var(--green) 100%)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "1.4rem",
+                flexShrink: 0,
+                boxShadow: "0 4px 15px rgba(108,99,255,0.4)",
+              }}
+            >
+              🎓
+            </div>
+            <div>
+              <p style={{ color: "var(--foreground)", fontWeight: 800, fontSize: "0.95rem", lineHeight: 1.2 }}>
+                Iqra Prep Coach
+              </p>
+              <p style={{ color: "var(--green)", fontSize: "0.72rem", fontWeight: 500 }}>FGEI BPS-15 Assistant</p>
+            </div>
           </div>
-          <div>
-            <p style={{ color: "var(--foreground)", fontWeight: 700, fontSize: "0.95rem", lineHeight: 1.2 }}>
-              Iqra Prep Coach
-            </p>
-            <p style={{ color: "var(--muted)", fontSize: "0.72rem" }}>FGEI BPS-15 Assistant</p>
-          </div>
+          {isMobile && (
+            <button
+              onClick={onToggle}
+              className="p-2 rounded-lg transition-colors"
+              style={{ background: "rgba(233,69,96,0.1)", color: "var(--accent)" }}
+            >
+              ✕
+            </button>
+          )}
         </div>
       </div>
 
       {/* Today's Focus */}
       {today && (
-        <div className="mx-3 mt-3 rounded-xl p-3" style={{ background: "var(--secondary)", border: "1px solid var(--card-border)" }}>
-          <p style={{ color: "var(--muted)", fontSize: "0.7rem", marginBottom: "4px" }}>TODAY — DAY {profile.current_day}/15</p>
-          <p style={{ color: "var(--primary)", fontWeight: 600, fontSize: "0.82rem" }}>{today.title}</p>
-          <div className="progress-bar mt-2">
-            <div className="progress-bar-fill" style={{ width: `${progress}%` }} />
+        <div className="mx-3 mt-3 rounded-xl p-3" style={{ 
+          background: "linear-gradient(135deg, rgba(108,99,255,0.1) 0%, rgba(0,212,170,0.05) 100%)", 
+          border: "1px solid rgba(108, 99, 255, 0.3)",
+          boxShadow: "0 4px 20px rgba(108,99,255,0.1)"
+        }}>
+          <p style={{ color: "var(--muted)", fontSize: "0.7rem", marginBottom: "4px", letterSpacing: "0.5px" }}>TODAY — DAY {profile.current_day}/15</p>
+          <p style={{ color: "var(--primary)", fontWeight: 700, fontSize: "0.85rem" }}>{today.title}</p>
+          <div className="progress-bar mt-2" style={{ height: "6px", borderRadius: "3px", background: "rgba(255,255,255,0.1)" }}>
+            <div className="progress-bar-fill" style={{ 
+              width: `${progress}%`, 
+              height: "100%", 
+              borderRadius: "3px",
+              background: "linear-gradient(90deg, var(--primary), var(--green))"
+            }} />
           </div>
         </div>
       )}
